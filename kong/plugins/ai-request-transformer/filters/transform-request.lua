@@ -3,21 +3,17 @@ local ai_plugin_ctx  = require("kong.llm.plugin.ctx")
 local ai_plugin_o11y = require("kong.llm.plugin.observability")
 local ai_shared      = require("kong.llm.drivers.shared")
 local llm            = require("kong.llm")
-
+local table_merge    = require("kong.tools.table").table_merge
 
 local _M = {
   NAME = "ai-request-transformer-transform-request",
   STAGE = "REQ_TRANSFORMATION",
   }
 
-local FILTER_OUTPUT_SCHEMA = {
+local FILTER_OUTPUT_SCHEMA = table_merge({
   transformed = "boolean",
   model = "table",
-  -- TODO: refactor this so they don't need to be duplicated
-  llm_prompt_tokens_count = "number",
-  llm_completion_tokens_count = "number",
-  llm_usage_cost = "number",
-}
+}, ai_plugin_o11y.LLM_METRICS_SCHEMA)
 
 local _, set_ctx = ai_plugin_ctx.get_namespaced_accesors(_M.NAME, FILTER_OUTPUT_SCHEMA)
 
