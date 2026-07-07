@@ -6,6 +6,7 @@ local pb = require "pb"
 local grpc_tools = require "kong.tools.grpc"
 local grpc_frame = grpc_tools.frame
 local grpc_unframe = grpc_tools.unframe
+local lrucache = require "resty.lrucache"
 
 local setmetatable = setmetatable
 
@@ -125,17 +126,33 @@ local function get_proto_info(fname)
   return info
 end
 
+local transcode_cache = lrucache.new(10e3)
+
 -- return input and output names of the method specified by the url path
--- TODO: memoize
 local function rpc_transcode(method, path, protofile)
   if not protofile then
     return nil
   end
 
+  local cache_key = method .. "\0" .. path .. "\0" .. protofile
+  local cached = transcode_cache:get(cache_key)
+  if cached then
+    if cached.err then
+      return nil, cached.err
+    end
+    local vars = {}
+    for k, v in pairs(cached.vars) do
+      vars[k] = v
+    end
+    return cached.endpoint, vars
+  end
+
   local info = get_proto_info(protofile)
   info = info[method]
   if not info then
-    return nil, ("Unknown method %q"):format(method)
+    local err_msg = ("Unknown method %q"):format(method)
+    transcode_cache:set(cache_key, { err = err_msg })
+    return nil, err_msg
   end
   for _, endpoint in ipairs(info) do
     local m, err = re_match(path, endpoint.regex, "jo")
@@ -147,10 +164,19 @@ local function rpc_transcode(method, path, protofile)
       for i, name in ipairs(endpoint.varnames) do
         vars[name] = m[i]
       end
-      return endpoint, vars
+      transcode_cache:set(cache_key, { endpoint = endpoint, vars = vars })
+
+      local ret_vars = {}
+      for k, v in pairs(vars) do
+        ret_vars[k] = v
+      end
+      return endpoint, ret_vars
     end
   end
-  return nil, ("Unknown path %q"):format(path)
+
+  local err_msg = ("Unknown path %q"):format(path)
+  transcode_cache:set(cache_key, { err = err_msg })
+  return nil, err_msg
 end
 
 
