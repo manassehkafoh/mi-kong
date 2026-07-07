@@ -3,6 +3,12 @@ local _M = {
   NAMESPACE = "proxy",
 }
 
+_M.LLM_METRICS_SCHEMA = {
+  llm_prompt_tokens_count = "number",
+  llm_completion_tokens_count = "number",
+  llm_usage_cost = "number",
+}
+
 -- metrics
 
 -- global metrics
