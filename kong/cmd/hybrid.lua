@@ -4,6 +4,7 @@ local x509 = require("resty.openssl.x509")
 local name = require("resty.openssl.x509.name")
 local pl_file = require("pl.file")
 local pl_path = require("pl.path")
+local ffi = require("ffi")
 
 
 local assert = assert
@@ -48,8 +49,14 @@ local function generate_cert(duration, cert_file, key_file)
   assert(pl_file.write(cert_file, crt:to_PEM()))
   assert(pl_file.write(key_file, key:to_PEM("private")))
 
-  assert(os.execute("chmod 644 " .. cert_file))
-  assert(os.execute("chmod 600 " .. key_file))
+  ffi.cdef[[
+    int chmod(const char *path, int mode);
+  ]]
+
+  assert(ffi.C.chmod(cert_file, tonumber("644", 8)) == 0,
+         "failed to set permissions for " .. cert_file)
+  assert(ffi.C.chmod(key_file, tonumber("600", 8)) == 0,
+         "failed to set permissions for " .. key_file)
 
   log("Successfully generated certificate/key pairs, " ..
       "they have been written to: '" .. cert_file .. "' and '" ..
