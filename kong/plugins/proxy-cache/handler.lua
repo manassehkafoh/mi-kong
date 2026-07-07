@@ -44,6 +44,32 @@ local hop_by_hop_headers = {
 }
 
 
+
+local config_cache = setmetatable({}, { __mode = "k" })
+
+local function get_config_cache(conf)
+  local cache = config_cache[conf]
+  if not cache then
+    cache = {
+      request_method = {},
+      response_code = {},
+    }
+    if conf.request_method then
+      for i = 1, #conf.request_method do
+        cache.request_method[conf.request_method[i]] = true
+      end
+    end
+    if conf.response_code then
+      for i = 1, #conf.response_code do
+        cache.response_code[conf.response_code[i]] = true
+      end
+    end
+    config_cache[conf] = cache
+  end
+  return cache
+end
+
+
 local function overwritable_header(header)
   local n_header = lower(header)
 
@@ -80,18 +106,11 @@ end
 
 
 local function cacheable_request(conf, cc)
-  -- TODO refactor these searches to O(1)
   do
     local method = kong.request.get_method()
-    local method_match = false
-    for i = 1, #conf.request_method do
-      if conf.request_method[i] == method then
-        method_match = true
-        break
-      end
-    end
+    local cache = get_config_cache(conf)
 
-    if not method_match then
+    if not cache.request_method[method] then
       return false
     end
   end
@@ -108,18 +127,11 @@ end
 
 
 local function cacheable_response(conf, cc)
-  -- TODO refactor these searches to O(1)
   do
     local status = kong.response.get_status()
-    local status_match = false
-    for i = 1, #conf.response_code do
-      if conf.response_code[i] == status then
-        status_match = true
-        break
-      end
-    end
+    local cache = get_config_cache(conf)
 
-    if not status_match then
+    if not cache.response_code[status] then
       return false
     end
   end
