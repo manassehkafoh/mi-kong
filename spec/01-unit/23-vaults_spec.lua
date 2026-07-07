@@ -171,6 +171,19 @@ describe("Vault PDK", function()
     end
   end)
 
+  it("test missing vault schema gracefully handles require error", function()
+    package.loaded["kong.vaults.test-missing-schema"] = {
+      get = function() return "value" end,
+      VERSION = "1.0",
+    }
+
+    local res, err = parse_reference("{vault://test-missing-schema/test}")
+    assert.is_nil(res)
+    assert.matches("could not find vault schema %(test%-missing%-schema%)", err)
+
+    package.loaded["kong.vaults.test-missing-schema"] = nil
+  end)
+
   for ref, exp in pairs(is_ref_test_map) do
     it("test is_reference [" .. ref .. "] -> " .. tostring(exp), function()
       assert.is_equal(exp, is_reference(ref))
