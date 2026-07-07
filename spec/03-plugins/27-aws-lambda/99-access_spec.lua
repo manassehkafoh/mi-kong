@@ -559,7 +559,6 @@ for _, strategy in helpers.each_strategy() do
           aws_secret           = "mock-secret",
           aws_region           = "us-east-1",
           function_name        = "functionWithEmptyArray",
-          empty_arrays_mode    = "legacy",
         }
       }
 
@@ -572,7 +571,6 @@ for _, strategy in helpers.each_strategy() do
           aws_secret           = "mock-secret",
           aws_region           = "us-east-1",
           function_name        = "functionWithEmptyArray",
-          empty_arrays_mode    = "correct",
         }
       }
 
@@ -585,7 +583,6 @@ for _, strategy in helpers.each_strategy() do
           aws_secret           = "mock-secret",
           aws_region           = "us-east-1",
           function_name        = "functionWithArrayCTypeInMVHAndEmptyArray",
-          empty_arrays_mode    = "legacy",
           is_proxy_integration = true,
         }
       }
@@ -1009,36 +1006,12 @@ for _, strategy in helpers.each_strategy() do
           method  = "GET",
           path    = "/get",
           headers = {
-            ["Host"] = "lambda26.test"
-          }
-        })
-
-        local body = assert.res_status(200, res)
-        assert.matches("\"testbody\":{}", body)
-
-        local res = assert(proxy_client:send {
-          method  = "GET",
-          path    = "/get",
-          headers = {
             ["Host"] = "lambda27.test"
           }
         })
 
         local body = assert.res_status(200, res)
         assert.matches("\"testbody\":%[%]", body)
-      end)
-
-      it("invokes a Lambda function with legacy empty array mode and mutlivalueheaders", function()
-        local res = assert(proxy_client:send {
-          method  = "GET",
-          path    = "/get",
-          headers = {
-            ["Host"] = "lambda28.test"
-          }
-        })
-
-        local _ = assert.res_status(200, res)
-        assert.equal("application/json+test", res.headers["Content-Type"])
       end)
 
       describe("config.is_proxy_integration = true", function()
