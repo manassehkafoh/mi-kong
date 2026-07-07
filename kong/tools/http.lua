@@ -78,17 +78,19 @@ do
     sort(sub_keys, compare_keys)
 
     local sub_value, next_sub_key
+    local array_no_index_key = no_array_indexes and (parent_key .. "[]") or nil
+
     for _, sub_key in ipairs(sub_keys) do
       sub_value = value[sub_key]
 
       if type(sub_key) == "number" then
         if no_array_indexes then
-          next_sub_key = parent_key .. "[]"
+          next_sub_key = array_no_index_key
         else
-          next_sub_key = ("%s[%s]"):format(parent_key, tostring(sub_key))
+          next_sub_key = parent_key .. "[" .. tostring(sub_key) .. "]"
         end
       else
-        next_sub_key = ("%s.%s"):format(parent_key, tostring(sub_key))
+        next_sub_key = parent_key .. "." .. tostring(sub_key)
       end
 
       if type(sub_value) == "table" then
