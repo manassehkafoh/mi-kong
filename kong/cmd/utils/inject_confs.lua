@@ -39,7 +39,7 @@ local function convert_directive_path_to_absolute(prefix, nginx_conf, paths)
 
   for _, path in ipairs(paths) do
     local pattern = fmt("(%s) (.+);", path)
-    local m, err = ngx.re.match(new_conf, pattern)
+    local m, err = ngx.re.match(new_conf, pattern, "jo")
     if err then
       return nil, err
 
@@ -50,7 +50,7 @@ local function convert_directive_path_to_absolute(prefix, nginx_conf, paths)
         local absolute_path = prefix .. "/" .. path
         local replace = "$1 " .. absolute_path .. ";"
         local _, err
-        new_conf, _, err = ngx.re.sub(new_conf, pattern, replace)
+        new_conf, _, err = ngx.re.sub(new_conf, pattern, replace, "jo")
 
         if not new_conf then
           return nil, err
