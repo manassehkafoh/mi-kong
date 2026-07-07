@@ -79,19 +79,21 @@ local function res_cc()
 end
 
 
+local req_method_cache = setmetatable({}, { __mode = "k" })
+
 local function cacheable_request(conf, cc)
-  -- TODO refactor these searches to O(1)
   do
     local method = kong.request.get_method()
-    local method_match = false
-    for i = 1, #conf.request_method do
-      if conf.request_method[i] == method then
-        method_match = true
-        break
+    local methods = req_method_cache[conf]
+    if not methods then
+      methods = {}
+      for i = 1, #conf.request_method do
+        methods[conf.request_method[i]] = true
       end
+      req_method_cache[conf] = methods
     end
 
-    if not method_match then
+    if not methods[method] then
       return false
     end
   end
@@ -107,19 +109,21 @@ local function cacheable_request(conf, cc)
 end
 
 
+local res_code_cache = setmetatable({}, { __mode = "k" })
+
 local function cacheable_response(conf, cc)
-  -- TODO refactor these searches to O(1)
   do
     local status = kong.response.get_status()
-    local status_match = false
-    for i = 1, #conf.response_code do
-      if conf.response_code[i] == status then
-        status_match = true
-        break
+    local codes = res_code_cache[conf]
+    if not codes then
+      codes = {}
+      for i = 1, #conf.response_code do
+        codes[conf.response_code[i]] = true
       end
+      res_code_cache[conf] = codes
     end
 
-    if not status_match then
+    if not codes[status] then
       return false
     end
   end
