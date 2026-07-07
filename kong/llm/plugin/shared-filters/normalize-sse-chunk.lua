@@ -176,7 +176,7 @@ local function handle_streaming_frame(conf, chunk, finished)
           },
         }
       },
-      model = nil, -- TODO: populate this
+      model = conf.model.name,
       object = "chat.completion",
       response = (conf.logging or EMPTY).log_payloads and response,
       usage = {
