@@ -115,11 +115,11 @@ local function configure_origin(conf, header_filter, req_origin)
           -- Kong 0.x did not anchor regexes:
           -- Perform adjustments to support regexes
           -- explicitly anchored by the user.
-          if entry:sub(-1) ~= "$" then
+          if entry:byte(-1) ~= 36 then
             entry = entry .. "$"
           end
 
-          if entry:sub(1, 1) == "^" then
+          if entry:byte(1) == 94 then
             entry = entry:sub(2)
           end
 
