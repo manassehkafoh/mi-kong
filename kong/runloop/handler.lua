@@ -327,14 +327,6 @@ local function get_service_for_route(db, route, services_init_cache)
   end
 
 
-  -- TODO: this should not be needed as the schema should check it already
-  if SUBSYSTEMS[service.protocol] ~= subsystem then
-    log(WARN, "service with protocol '", service.protocol,
-              "' cannot be used with '", subsystem, "' subsystem")
-
-    return nil
-  end
-
   return service
 end
 
