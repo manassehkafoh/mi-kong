@@ -35,7 +35,7 @@ end
 
 local function handle_streaming_frame(conf, chunk, finished)
 
-  local accept_gzip = get_global_ctx("accept_gzip")
+  local accept_gzip = get_global_ctx("accept_gzip") and not get_global_ctx("stream_mode")
 
   local events = ai_plugin_ctx.get_namespaced_ctx("parse-sse-chunk", "current_events")
   if type(chunk) == "string" and chunk ~= "" and not events then
@@ -125,9 +125,8 @@ local function handle_streaming_frame(conf, chunk, finished)
   end
 
   local response_frame = frame_buffer:get()
-  -- TODO: disable gzip for SSE because it needs immediate flush for each chunk
-  -- and seems nginx doesn't support it
-  if not finished and accept_gzip and not get_global_ctx("stream_mode") then
+
+  if not finished and accept_gzip then
     response_frame = deflate_gzip(response_frame)
   end
 
