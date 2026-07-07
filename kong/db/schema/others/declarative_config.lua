@@ -657,21 +657,31 @@ local function get_key_for_uuid_gen(entity, item, schema, parent_fk, child_key)
       -- an upstream). We compose the item's key with the parent's key,
       -- preventing it from being overwritten by identical endpoint keys
       -- declared under other parents.
+      local parts = { key }
+      local n = 1
+
       for fname, field in schema:each_field(item) do
         if field.type == "foreign" and field.on_delete == "cascade" then
           if parent_fk then
             local foreign_key_keys = all_schemas[field.reference].primary_key
             for _, fk_pk in ipairs(foreign_key_keys) do
-              key = key .. ":" .. parent_fk[fk_pk]
+              n = n + 1
+              parts[n] = parent_fk[fk_pk]
             end
           else
-            key = key .. ":" .. item[fname]
+            n = n + 1
+            parts[n] = item[fname]
           end
         end
       end
 
       if not schema.fields[schema.endpoint_key].unique_across_ws then
-        key = key .. ":" .. ws_id_for(item)
+        n = n + 1
+        parts[n] = ws_id_for(item)
+      end
+
+      if n > 1 then
+        key = concat(parts, ":")
       end
     end
 
