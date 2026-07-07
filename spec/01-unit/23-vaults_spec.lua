@@ -84,6 +84,16 @@ describe("Vault PDK", function()
     assert.equal("reference url has invalid path [{vault://env/////}]", err)
   end)
 
+  it("handles missing vault schema gracefully", function()
+    package.loaded["kong.vaults.missing-schema-vault"] = { init = function() end }
+    finally(function()
+      package.loaded["kong.vaults.missing-schema-vault"] = nil
+    end)
+    local res, err = dereference("{vault://missing-schema-vault/test}")
+    assert.is_nil(res)
+    assert.matches("could not find vault schema %(missing%-schema%-vault%):", err)
+  end)
+
   it("test init nested/path", function()
     local res, err = parse_reference("{vault://env/test-secret/test-key}")
     assert.is_nil(err)
