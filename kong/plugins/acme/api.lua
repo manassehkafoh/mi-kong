@@ -101,9 +101,10 @@ return {
             err = check_path .. "* doesn't map to a Route in Kong; " ..
                   "please refer to docs on how to create dummy Route and Service"
           elseif res.body ~= "Not found\n" then
-            err = "unexpected response: \"" .. (res.body or "<nil>") .. "\""
             if res.status ~= 404 then
-              err = err .. string_format(", unexpected status code: %d", res.status)
+              err = string_format("unexpected response: \"%s\", unexpected status code: %d", res.body or "<nil>", res.status)
+            else
+              err = string_format("unexpected response: \"%s\"", res.body or "<nil>")
             end
           else
             return kong.response.exit(200, { message = "sanity test for host " .. host .. " passed"})
