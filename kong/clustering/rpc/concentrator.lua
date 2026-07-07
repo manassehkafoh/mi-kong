@@ -183,7 +183,8 @@ function _M:_event_loop(lconn)
   local rpc_resp_channel_name = RESP_CHANNEL_PREFIX .. self.worker_id
 
   -- we always subscribe to our worker's receiving channel first
-  local res, err = lconn:query('LISTEN "' .. rpc_resp_channel_name .. '";')
+  local sql = string_format("LISTEN %s;", self.db.connector:escape_identifier(rpc_resp_channel_name))
+  local res, err = lconn:query(sql)
   if not res then
     return nil, "unable to subscribe to concentrator response channel: " .. err
   end
@@ -369,13 +370,15 @@ end
 
 -- subscribe to RPC calls for worker with ID node_id
 function _M:_enqueue_subscribe(node_id)
-  return self.sub_unsub:push('LISTEN "' .. REQ_CHANNEL_PREFIX .. node_id .. '";')
+  return self.sub_unsub:push(string_format("LISTEN %s;",
+                                           self.db.connector:escape_identifier(REQ_CHANNEL_PREFIX .. node_id)))
 end
 
 
 -- unsubscribe to RPC calls for worker with ID node_id
 function _M:_enqueue_unsubscribe(node_id)
-  return self.sub_unsub:push('UNLISTEN "' .. REQ_CHANNEL_PREFIX .. node_id .. '";')
+  return self.sub_unsub:push(string_format("UNLISTEN %s;",
+                                           self.db.connector:escape_identifier(REQ_CHANNEL_PREFIX .. node_id)))
 end
 
 
