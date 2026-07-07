@@ -36,16 +36,10 @@ end
 
 
 local function copy_request_table(request_table)
-  -- only copy the "options", to save memory, as messages are not overriden
   local new_t = {}
   for k, v in pairs(request_table) do
-    if k ~= "messages" then
-      new_t[k] = cycle_aware_deep_copy(v)
-    end
+    new_t[k] = cycle_aware_deep_copy(v)
   end
-
-  -- TODO: make messsages immutable
-  new_t.messages = request_table.messages
 
   return new_t
 end
