@@ -242,6 +242,31 @@ local function new(self)
 
 
   ---
+  -- Returns whether the node is proxying traffic.
+  --
+  -- @function kong.node.is_proxying
+  -- @treturn boolean `true` if the node is proxying traffic, `false` otherwise.
+  -- @usage
+  -- local is_proxying = kong.node.is_proxying()
+  function _NODE.is_proxying()
+    local config = self and self.configuration
+
+    if not config or config.role == "control_plane" then
+      return false
+    end
+
+    local subsystem = ngx.config.subsystem
+
+    if (subsystem == "http"   and #config.proxy_listeners == 0) or
+       (subsystem == "stream" and #config.stream_listeners == 0) then
+      return false
+    end
+
+    return true
+  end
+
+
+  ---
   -- Returns the name used by the local machine.
   --
   -- @function kong.node.get_hostname
