@@ -155,7 +155,7 @@ function AWSLambdaHandler:access(conf)
       port = port,
       timeout = conf.timeout,
       keepalive_idle_timeout = conf.keepalive,
-      ssl_verify = false, -- TODO: set this default to true in the next major version
+      ssl_verify = true,
       http_proxy = conf.proxy_url,
       https_proxy = conf.proxy_url,
     })
