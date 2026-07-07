@@ -576,8 +576,12 @@ local function prepare_prefix(kong_config, nginx_custom_template_path, skip_writ
 
   -- generate default SSL certs if needed
   do
+    local t_concat = table.concat
+    local buf = {}
     for _, target in ipairs({ "proxy", "admin", "admin_gui", "status" }) do
-      local ssl_enabled = kong_config[target .. "_ssl_enabled"]
+      buf[1] = target
+      buf[2] = "_ssl_enabled"
+      local ssl_enabled = kong_config[t_concat(buf)]
       if not ssl_enabled and target == "proxy" then
         ssl_enabled = kong_config.stream_proxy_ssl_enabled
       end
@@ -586,11 +590,15 @@ local function prepare_prefix(kong_config, nginx_custom_template_path, skip_writ
       if target == "proxy" then
         prefix = ""
       else
-        prefix = target .. "_"
+        buf[2] = "_"
+        prefix = t_concat(buf)
       end
 
-      local ssl_cert = kong_config[prefix .. "ssl_cert"]
-      local ssl_cert_key = kong_config[prefix .. "ssl_cert_key"]
+      buf[1] = prefix
+      buf[2] = "ssl_cert"
+      local ssl_cert = kong_config[t_concat(buf)]
+      buf[2] = "ssl_cert_key"
+      local ssl_cert_key = kong_config[t_concat(buf)]
 
       if ssl_enabled and #ssl_cert == 0 and #ssl_cert_key == 0 then
         log.verbose("SSL enabled on %s, no custom certificate set: using default certificates", target)
@@ -599,10 +607,14 @@ local function prepare_prefix(kong_config, nginx_custom_template_path, skip_writ
           return nil, err
         end
 
-        ssl_cert[1]     = kong_config[prefix .. "ssl_cert_default"]
-        ssl_cert_key[1] = kong_config[prefix .. "ssl_cert_key_default"]
-        ssl_cert[2]     = kong_config[prefix .. "ssl_cert_default_ecdsa"]
-        ssl_cert_key[2] = kong_config[prefix .. "ssl_cert_key_default_ecdsa"]
+        buf[2] = "ssl_cert_default"
+        ssl_cert[1]     = kong_config[t_concat(buf)]
+        buf[2] = "ssl_cert_key_default"
+        ssl_cert_key[1] = kong_config[t_concat(buf)]
+        buf[2] = "ssl_cert_default_ecdsa"
+        ssl_cert[2]     = kong_config[t_concat(buf)]
+        buf[2] = "ssl_cert_key_default_ecdsa"
+        ssl_cert_key[2] = kong_config[t_concat(buf)]
       end
     end
   end
