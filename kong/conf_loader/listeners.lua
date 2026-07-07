@@ -45,7 +45,7 @@ local function parse_option_flags(value, flags)
 
   value = " " .. value .. " "
 
-  local sanitized = ""
+  local sanitized_flags = {}
   local result = {}
 
   for _, flag in ipairs(flags) do
@@ -65,7 +65,7 @@ local function parse_option_flags(value, flags)
 
       -- since nginx 1.25.1 the flag "http2" is deprecated
       if flag ~= "http2" then
-        sanitized = sanitized .. " " .. flag
+        insert(sanitized_flags, flag)
       end
 
     else
@@ -73,7 +73,7 @@ local function parse_option_flags(value, flags)
     end
   end
 
-  return strip(value), result, strip(sanitized)
+  return strip(value), result, concat(sanitized_flags, " ")
 end
 
 
