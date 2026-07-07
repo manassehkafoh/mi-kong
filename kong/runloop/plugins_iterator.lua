@@ -466,12 +466,7 @@ local function create_configure(configurable)
   -- we only want the plugin_iterator:configure to be only available on proxying
   -- nodes (or data planes), thus we disable it if this code gets executed on control
   -- plane or on a node that does not listen any proxy ports.
-  --
-  -- TODO: move to PDK, e.g. kong.node.is_proxying()
-  if kong.configuration.role == "control_plane"
-  or ((subsystem == "http"   and #kong.configuration.proxy_listeners == 0) or
-      (subsystem == "stream" and #kong.configuration.stream_listeners == 0))
-  then
+  if not kong.node.is_proxying() then
     return function() end
   end
 
