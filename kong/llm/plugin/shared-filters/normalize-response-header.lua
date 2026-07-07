@@ -23,8 +23,7 @@ function _M:run(_)
       set_ctx("stream_content_type", kong.service.response.get_header("Content-Type"))
       kong.response.set_header("Content-Type", "text/event-stream")
 
-      -- TODO: disable gzip for SSE because it needs immediate flush for each chunk
-      -- and seems nginx doesn't support it
+      kong.response.clear_header("Content-Encoding")
     elseif get_global_ctx("accept_gzip") then
       -- for gzip response, don't set content-length at all to align with upstream
       kong.response.clear_header("Content-Length")
