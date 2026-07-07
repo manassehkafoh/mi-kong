@@ -192,12 +192,6 @@ for _, strategy in helpers.each_strategy() do
         service     = null,
       }
 
-      local route28 = bp.routes:insert {
-        hosts       = { "lambda28.test" },
-        protocols   = { "http", "https" },
-        service     = null,
-      }
-
       local route29 = bp.routes:insert {
         hosts       = { "lambda29.test" },
         protocols   = { "http", "https" },
@@ -559,7 +553,6 @@ for _, strategy in helpers.each_strategy() do
           aws_secret           = "mock-secret",
           aws_region           = "us-east-1",
           function_name        = "functionWithEmptyArray",
-          empty_arrays_mode    = "legacy",
         }
       }
 
@@ -572,21 +565,6 @@ for _, strategy in helpers.each_strategy() do
           aws_secret           = "mock-secret",
           aws_region           = "us-east-1",
           function_name        = "functionWithEmptyArray",
-          empty_arrays_mode    = "correct",
-        }
-      }
-
-      bp.plugins:insert {
-        name     = "aws-lambda",
-        route    = { id = route28.id },
-        config                 = {
-          port                 = 10001,
-          aws_key              = "mock-key",
-          aws_secret           = "mock-secret",
-          aws_region           = "us-east-1",
-          function_name        = "functionWithArrayCTypeInMVHAndEmptyArray",
-          empty_arrays_mode    = "legacy",
-          is_proxy_integration = true,
         }
       }
 
@@ -1014,7 +992,7 @@ for _, strategy in helpers.each_strategy() do
         })
 
         local body = assert.res_status(200, res)
-        assert.matches("\"testbody\":{}", body)
+        assert.matches("\"testbody\":%[%]", body)
 
         local res = assert(proxy_client:send {
           method  = "GET",
@@ -1026,19 +1004,6 @@ for _, strategy in helpers.each_strategy() do
 
         local body = assert.res_status(200, res)
         assert.matches("\"testbody\":%[%]", body)
-      end)
-
-      it("invokes a Lambda function with legacy empty array mode and mutlivalueheaders", function()
-        local res = assert(proxy_client:send {
-          method  = "GET",
-          path    = "/get",
-          headers = {
-            ["Host"] = "lambda28.test"
-          }
-        })
-
-        local _ = assert.res_status(200, res)
-        assert.equal("application/json+test", res.headers["Content-Type"])
       end)
 
       describe("config.is_proxy_integration = true", function()
