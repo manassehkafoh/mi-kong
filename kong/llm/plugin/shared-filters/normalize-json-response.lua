@@ -16,10 +16,6 @@ local function transform_body(conf)
   local route_type = conf.route_type
   local ai_driver = require("kong.llm.drivers." .. conf.model.provider)
 
-  -- clear driver specific headers
-  -- TODO: move this to a better place
-  ai_driver.post_request(conf)
-
   local response_body = get_global_ctx("response_body")
   if not response_body then
     err = "no response body found when transforming response"

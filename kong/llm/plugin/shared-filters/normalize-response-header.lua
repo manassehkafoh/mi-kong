@@ -13,9 +13,16 @@ local FILTER_OUTPUT_SCHEMA = {
 
 local _, set_ctx = ai_plugin_ctx.get_namespaced_accesors(_M.NAME, FILTER_OUTPUT_SCHEMA)
 
-function _M:run(_)
+function _M:run(conf)
   -- for error and exit response, just use plaintext headers
   if kong.response.get_source() == "service" then
+    if ai_plugin_ctx.has_namespace("ai-proxy-advanced-balance") then
+      conf = ai_plugin_ctx.get_namespaced_ctx("ai-proxy-advanced-balance", "selected_target") or conf
+    end
+
+    local ai_driver = require("kong.llm.drivers." .. conf.model.provider)
+    ai_driver.post_request(conf)
+
     -- we use openai's streaming mode (SSE)
     if get_global_ctx("stream_mode") then
       -- we are going to send plaintext event-stream frames for ALL models,
