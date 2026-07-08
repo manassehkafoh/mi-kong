@@ -139,25 +139,34 @@ function _M:init_dp(manager)
   -- Params: new_versions: list of namespaces and their new versions, like:
   -- { default = { new_version = "1000", }, }
   manager.callbacks:register("kong.sync.v2.notify_new_version", function(node_id, new_versions)
-    -- TODO: currently only default is supported, and anything else is ignored
-    local default_new_version = new_versions.default
-    if not default_new_version then
-      return nil, "default namespace does not exist inside params"
-    end
-
-    local version = default_new_version.new_version
-    if not version then
-      return nil, "'new_version' key does not exist"
+    if type(new_versions) ~= "table" or next(new_versions) == nil then
+      return nil, "no namespaces provided"
     end
 
     local lmdb_ver = get_current_version()
-    if lmdb_ver < version then
-      -- set lastest version to shm
-      kong_shm:set(CLUSTERING_DATA_PLANES_LATEST_VERSION_KEY, version)
+    local max_version = lmdb_ver
+    local should_sync = false
+
+    for ns, ns_info in pairs(new_versions) do
+      local version = ns_info.new_version
+      if version then
+        if lmdb_ver < version then
+          should_sync = true
+        end
+
+        if max_version < version then
+          max_version = version
+        end
+      end
+    end
+
+    if should_sync then
+      -- set latest version to shm
+      kong_shm:set(CLUSTERING_DATA_PLANES_LATEST_VERSION_KEY, max_version)
       return self:sync_once()
     end
 
-    ngx_log(ngx_DEBUG, "no sync runs, version is ", version)
+    ngx_log(ngx_DEBUG, "no sync runs, version is ", max_version)
 
     return true
   end)

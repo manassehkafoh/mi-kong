@@ -96,6 +96,26 @@ describe("kong.sync.v2", function()
         return called
       end, 20)
     end)
+
+    it("notify_new_version triggers get_delta for additional namespaces", function()
+      local called = false
+      mocked_cp:mock("kong.sync.v2.get_delta", function(node_id, payload)
+        called = true
+        return { default = { version = fmt(100), deltas = {} } }
+      end)
+
+      -- make a call from the mocked cp
+      -- CP->DP: notify_new_version
+      assert(mocked_cp:call(node_id, "kong.sync.v2.notify_new_version", {
+        custom_ns = { new_version = fmt(200), },
+        another_ns = { new_version = fmt(150), },
+      }))
+
+      -- DP->CP: get_delta
+      helpers.wait_until(function()
+        return called
+      end, 20)
+    end)
   end)
   
   describe("DP side", function()
