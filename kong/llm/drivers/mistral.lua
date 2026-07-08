@@ -42,7 +42,7 @@ function _M.from_format(response_string, model_info, route_type)
     return nil, fmt("no transformer available from format %s://%s", model_info.provider, transformer_type)
   end
 
-  local ok, response_string, err = pcall(
+  local ok, response_string, err, metadata = pcall(
     transformers_from[transformer_type],
     response_string,
     model_info,
@@ -55,7 +55,7 @@ function _M.from_format(response_string, model_info, route_type)
     return nil, fmt("transformation failed from type %s://%s/%s: %s", model_info.provider, route_type, model_info.options.mistral_version, err or "unexpected_error")
   end
 
-  return response_string, nil
+  return response_string, nil, metadata
 end
 
 function _M.to_format(request_table, model_info, route_type)
