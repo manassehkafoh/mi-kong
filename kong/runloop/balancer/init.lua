@@ -291,7 +291,6 @@ local function execute(balancer_data, ctx)
   if balancer_data.type ~= "name" then
     -- it's an ip address (v4 or v6), so nothing we can do...
     balancer_data.ip       = balancer_data.host
-    balancer_data.port     = balancer_data.port or 80 -- TODO: remove this fallback value
     balancer_data.hostname = balancer_data.host
     return true
   end
