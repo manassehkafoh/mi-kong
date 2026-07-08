@@ -371,8 +371,10 @@ local sync_emitter = {
 
   emit_entity = function(self, entity_name, entity_data)
     self.out_n = self.out_n + 1
+    local ws_id = entity_data.ws_id or kong.default_workspace
+    entity_data.ws_id = nil
     self.out[self.out_n] = { type = entity_name , entity = entity_data, version = self.sync_version,
-                             ws_id = kong.default_workspace, }
+                             ws_id = ws_id, }
   end,
 
   done = function(self)
