@@ -18,7 +18,6 @@ local request_util = require "kong.plugins.aws-lambda.request-util"
 local get_now = require("kong.tools.time").get_updated_now_ms
 local build_request_payload = request_util.build_request_payload
 local extract_proxy_response = request_util.extract_proxy_response
-local remove_array_mt_for_empty_table = request_util.remove_array_mt_for_empty_table
 
 local aws = require("resty.aws")
 local AWS_GLOBAL_CONFIG
@@ -237,24 +236,6 @@ function AWSLambdaHandler:access(conf)
     local outbound_via = (ngx_var.http2 and "2 " or "1.1 ") .. server_tokens
     headers[VIA_HEADER] = headers[VIA_HEADER] and headers[VIA_HEADER] .. ", " .. outbound_via
                           or outbound_via
-  end
-
-  -- TODO: remove this in the next major release
-  -- function to remove array_mt metatables from empty tables
-  -- This is just a backward compatibility code to keep a
-  -- long-lived behavior that Kong responsed JSON objects
-  -- instead of JSON arrays for empty arrays.
-  if conf.empty_arrays_mode == "legacy" then
-    local ct = headers["Content-Type"]
-    -- If Content-Type is specified by multiValueHeader then
-    -- it will be an array, so we need to get the first element
-    if type(ct) == "table" and #ct > 0 then
-      ct = ct[1]
-    end
-
-    if ct and type(ct) == "string" and re_match(ct:lower(), "application/.*json", "jo") then
-      content = remove_array_mt_for_empty_table(content)
-    end
   end
 
   return kong.response.exit(status, content, headers)
