@@ -740,7 +740,7 @@ function _M.pre_request(conf, request_table)
   end
 
   -- retrieve the plugin name
-  local plugin_name = conf.__key__:match('plugins:(.-):')
+  local plugin_name = conf.__plugin_name
   if not plugin_name or plugin_name == "" then
     return nil, "no plugin name is being passed by the plugin"
   end
@@ -795,7 +795,7 @@ function _M.post_request(conf, response_object)
     body_string = response_object.response or "ERROR__NOT_SET"
   end
 
-  local plugin_name = conf.__key__:match('plugins:(.-):')
+  local plugin_name = conf.__plugin_name
   if not plugin_name or plugin_name == "" then
     return nil, "no plugin name is being passed by the plugin"
   end

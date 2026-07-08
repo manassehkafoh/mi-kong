@@ -54,7 +54,7 @@ describe(PLUGIN_NAME .. ": (unit)", function()
     MOCK_PORT = helpers.get_available_port()
 
     OPENAI_INSTRUCTIONAL_RESPONSE = {
-      __key__ = "ai-response-transformer",
+      __plugin_name = "ai-response-transformer",
       route_type = "llm/v1/chat",
       model = {
         name = "gpt-4",
