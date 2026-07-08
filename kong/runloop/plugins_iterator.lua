@@ -166,18 +166,10 @@ local function get_plugin_config(plugin, name, ws_id)
   cfg.consumer_id = plugin.consumer and plugin.consumer.id
   cfg.plugin_instance_name = plugin.instance_name
   cfg.__plugin_id = plugin.id
+  cfg.__plugin_name = name
   cfg.__ws_id = ws_id
 
-  local key = kong.db.plugins:cache_key(name,
-                                        cfg.route_id,
-                                        cfg.service_id,
-                                        cfg.consumer_id,
-                                        nil,
-                                        ws_id)
-
-  -- TODO: deprecate usage of __key__ as id of plugin
-  if not cfg.__key__ then
-    cfg.__key__ = key
+  if not cfg.__seq__ then
     -- generate a unique sequence across workers
     -- with a seq 0, plugin server generates an unused random instance id
     local next_seq, err = ngx.shared.kong:incr("plugins_iterator:__seq__", 1, 0, 0)
