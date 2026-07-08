@@ -64,11 +64,6 @@ local function validate_deltas(deltas, is_full_sync)
       -- validate entity
       local dao = kong.db[delta_type]
       if dao then
-        -- CP will insert ws_id into the entity, which will be validated as an
-        -- unknown field.
-        -- TODO: On the CP side, remove ws_id from the entity and set it only
-        -- in the delta.
-
         -- needs to insert default values into entity to align with the function
         -- dc:validate(input), which will call process_auto_fields on its
         -- entities of input.
@@ -78,7 +73,7 @@ local function validate_deltas(deltas, is_full_sync)
         local ok, err_t = dao.schema:validate(copy)
         if ok then
           -- we already set the correct default values for entity
-          copy.ws_id = delta_entity.ws_id
+          copy.ws_id = ws_id
           delta.entity = copy
 
         else
