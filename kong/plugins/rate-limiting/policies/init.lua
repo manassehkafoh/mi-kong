@@ -229,7 +229,7 @@ local plugin_sync_running = {}
 -- 3. A change is always picked up by a pending timer and
 --    will be sync to Redis at most sync_rate interval
 local function rate_limited_sync(conf, sync_func)
-  local cache_key = conf.__key__ or conf.__plugin_id or "rate-limiting"
+  local cache_key = conf.__plugin_id or "rate-limiting"
   local redis_config = get_redis_configuration(conf)
 
   -- a timer is pending. The change will be picked up by the pending timer
