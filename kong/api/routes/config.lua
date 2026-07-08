@@ -71,9 +71,18 @@ local function parse_config_post_opts(params)
   local flatten_errors = truthy(params.flatten_errors)
   params.flatten_errors = nil
 
-  -- XXX: this code is much older than the `flatten_errors` flag and therefore
-  -- does not use the same `truthy()` helper, for backwards compatibility
-  local check_hash = tostring(params.check_hash) == "1"
+  local check_hash_val = params.check_hash
+  local check_hash = truthy(check_hash_val)
+
+  if check_hash and tostring(check_hash_val) ~= "1" then
+    kong.log.deprecation("passing truthy values other than '1' to check_hash is " ..
+                         "deprecated, please use '1' instead. They are currently " ..
+                         "evaluated as false for backwards compatibility.",
+                         { removal = "4.0.0" })
+
+    check_hash = false
+  end
+
   params.check_hash = nil
 
   return {
