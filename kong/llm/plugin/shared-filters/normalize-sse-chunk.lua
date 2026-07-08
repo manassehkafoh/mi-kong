@@ -83,10 +83,12 @@ local function handle_streaming_frame(conf, chunk, finished)
 
 
   for _, event in ipairs(events) do
-    -- TODO: currently only subset of driver follow the body, err, metadata pattern
-    -- unify this so that it was always extracted from the body
     local model_t = ai_plugin_ctx.get_request_model_table_inuse()
-    local formatted, _, metadata = ai_driver.from_format(event, model_t, "stream/" .. conf.route_type)
+    local formatted, err, metadata = ai_driver.from_format(event, model_t, "stream/" .. conf.route_type)
+
+    if err then
+      kong.log.err("failed to format stream event: ", err)
+    end
 
     if formatted then
       frame_buffer:put("data: ")

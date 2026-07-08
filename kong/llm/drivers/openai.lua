@@ -13,8 +13,8 @@ local ai_plugin_ctx = require("kong.llm.plugin.ctx")
 local DRIVER_NAME = "openai"
 --
 
-local function handle_stream_event(event_t)
-  return event_t.data
+local function handle_stream_event(event_t, model_info, route_type)
+  return event_t.data, nil, nil
 end
 
 local transformers_to = {
@@ -36,29 +36,29 @@ local transformers_to = {
 }
 
 local transformers_from = {
-  ["llm/v1/chat"] = function(response_string, _)
+  ["llm/v1/chat"] = function(response_string, _, _)
     local response_object, err = cjson.decode(response_string)
     if err then
-      return nil, "failed to decode llm/v1/chat response"
+      return nil, "failed to decode llm/v1/chat response", nil
     end
 
     if response_object.choices then
-      return response_string, nil
+      return response_string, nil, nil
     else
-      return nil, "'choices' not in llm/v1/chat response"
+      return nil, "'choices' not in llm/v1/chat response", nil
     end
   end,
 
-  ["llm/v1/completions"] = function(response_string, _)
+  ["llm/v1/completions"] = function(response_string, _, _)
     local response_object, err = cjson.decode(response_string)
     if err then
-      return nil, "failed to decode llm/v1/completions response"
+      return nil, "failed to decode llm/v1/completions response", nil
     end
 
     if response_object.choices then
-      return response_string, nil
+      return response_string, nil, nil
     else
-      return nil, "'choices' not in llm/v1/completions response"
+      return nil, "'choices' not in llm/v1/completions response", nil
     end
   end,
 
@@ -74,7 +74,7 @@ function _M.from_format(response_string, model_info, route_type)
     return nil, fmt("no transformer available from format %s://%s", model_info.provider, route_type)
   end
 
-  local ok, response_string, err = pcall(transformers_from[route_type], response_string, model_info)
+  local ok, response_string, err, metadata = pcall(transformers_from[route_type], response_string, model_info, route_type)
   if not ok then
     err = response_string
   end
@@ -86,7 +86,7 @@ function _M.from_format(response_string, model_info, route_type)
                   )
   end
 
-  return response_string, nil
+  return response_string, nil, metadata
 end
 
 function _M.to_format(request_table, model_info, route_type)
