@@ -71,7 +71,7 @@ function Connector:infos()
 end
 
 
-function Connector:connect()
+function Connector:connect(operation, opts)
   error(fmt("connect() not implemented for '%s' strategy", self.database))
 end
 

@@ -55,8 +55,7 @@ return {
         status_response.database = nil
       end
 
-      -- TODO: no way to bypass connection pool
-      local ok, err = kong.db:connect()
+      local ok, err = kong.db:connect({ bypass_pool = true })
       if not ok then
         ngx.log(ngx.ERR, "failed to connect to ", kong.db.infos.strategy,
                          " during /status endpoint check: ", err)
