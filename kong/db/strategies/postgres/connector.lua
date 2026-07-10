@@ -400,7 +400,7 @@ function _mt:infos()
 end
 
 
-function _mt:connect(operation)
+function _mt:connect(operation, opts)
   if operation ~= nil and operation ~= "read" and operation ~= "write" then
     error("operation must be 'read' or 'write', was: " .. tostring(operation), 2)
   end
@@ -414,8 +414,14 @@ function _mt:connect(operation)
     return conn
   end
 
-  local connection, err = connect(operation == "write" and
-                                  self.config or self.config_ro)
+  local config = operation == "write" and self.config or self.config_ro
+  if opts and opts.bypass_pool then
+    config = table_merge({}, config)
+    config.pool_size = nil
+    config.pool = "healthcheck_pool_" .. tostring(ngx.worker.pid())
+  end
+
+  local connection, err = connect(config)
   if not connection then
     return nil, err
   end

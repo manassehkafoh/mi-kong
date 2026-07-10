@@ -176,8 +176,8 @@ function DB:init_worker()
 end
 
 
-function DB:connect()
-  local ok, err = self.connector:connect()
+function DB:connect(opts)
+  local ok, err = self.connector:connect(nil, opts)
   if not ok then
     return nil, prefix_err(self, err)
   end
